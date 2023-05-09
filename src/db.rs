@@ -17,11 +17,11 @@ pub trait TDatabase {
     fn list_collections(&self) -> Result<Vec<String>, DBError>;
     fn delete_collection(&self, name: &str) -> Result<(), DBError>;
     fn rename_collection(&self, name: &str, new_name: &str) -> Result<(), DBError>;
-    fn insert<T: Data>(&self, collection: &str, data: T) -> Result<(), DBError>;
-    fn query<T: Data>(&mut self, collection: &str, uuid: &str) -> Result<T, DBError>;
-    fn update<T: Data>(&mut self, collection: &str, data: T) -> Result<(), DBError>;
-    fn delete<T: Data>(&mut self, collection: &str, uuid: &str) -> Result<(), DBError>;
-    fn list<T: Data>(&self, collection: &str) -> Result<Vec<T>, DBError>;
+    fn insert_data<T: Data>(&self, collection: &str, data: T) -> Result<(), DBError>;
+    fn query_data<T: Data>(&mut self, collection: &str, uuid: &str) -> Result<T, DBError>;
+    fn update_data<T: Data>(&mut self, collection: &str, data: T) -> Result<(), DBError>;
+    fn delete_data<T: Data>(&mut self, collection: &str, uuid: &str) -> Result<(), DBError>;
+    fn list_data<T: Data>(&self, collection: &str) -> Result<Vec<T>, DBError>;
 }
 
 /// Database struct used to interact with the database
@@ -143,7 +143,7 @@ impl TDatabase for Database {
     }
 
     /// Inserts data into a collection in the database
-    fn insert<T: Data>(&self, collection: &str, data: T) -> Result<(), DBError> {
+    fn insert_data<T: Data>(&self, collection: &str, data: T) -> Result<(), DBError> {
         let mut c: Vec<T> = self.read_collection(collection)?;
         for i in &c {
             if i.uuid() == data.uuid() {
@@ -156,7 +156,7 @@ impl TDatabase for Database {
     }
 
     /// Queries data from a collection in the database
-    fn query<T: Data>(&mut self, collection: &str, uuid: &str) -> Result<T, DBError> {
+    fn query_data<T: Data>(&mut self, collection: &str, uuid: &str) -> Result<T, DBError> {
         let c: Vec<T> = self.read_collection(collection)?;
         for i in &c {
             if i.uuid() == uuid {
@@ -167,7 +167,7 @@ impl TDatabase for Database {
     }
 
     /// Updates data in a collection in the database
-    fn update<T: Data>(&mut self, collection: &str, data: T) -> Result<(), DBError> {
+    fn update_data<T: Data>(&mut self, collection: &str, data: T) -> Result<(), DBError> {
         let mut c: Vec<T> = self.read_collection(collection)?;
         for i in 0..c.len() {
             if c[i].uuid() == data.uuid() {
@@ -180,7 +180,7 @@ impl TDatabase for Database {
     }
 
     /// Deletes data from a collection in the database
-    fn delete<T: Data>(&mut self, collection: &str, uuid: &str) -> Result<(), DBError> {
+    fn delete_data<T: Data>(&mut self, collection: &str, uuid: &str) -> Result<(), DBError> {
         let mut c: Vec<T> = self.read_collection(collection)?;
         for i in 0..c.len() {
             if c[i].uuid() == uuid {
@@ -193,7 +193,7 @@ impl TDatabase for Database {
     }
 
     /// Lists data from a collection in the database
-    fn list<T: Data>(&self, collection: &str) -> Result<Vec<T>, DBError> {
+    fn list_data<T: Data>(&self, collection: &str) -> Result<Vec<T>, DBError> {
         self.read_collection(collection)
     }
 
@@ -265,7 +265,7 @@ mod test {
             uuid: "test".to_string(),
             name: "test".to_string(),
         };
-        db.insert("test", data.clone()).unwrap();
+        db.insert_data("test", data.clone()).unwrap();
         let r: Vec<TestData> = db.read_collection("test").unwrap();
         assert_eq!(r[0].uuid, data.uuid);
     }
@@ -288,13 +288,13 @@ mod test {
             uuid: "test".to_string(),
             name: "test".to_string(),
         };
-        db.insert("test", data_1.clone()).unwrap();
+        db.insert_data("test", data_1.clone()).unwrap();
         let data_2 = TestData {
             uuid: "test2".to_string(),
             name: "test2".to_string(),
         };
-        db.insert("test", data_2.clone()).unwrap();
-        let r: TestData = db.query("test", "test").unwrap();
+        db.insert_data("test", data_2.clone()).unwrap();
+        let r: TestData = db.query_data("test", "test").unwrap();
         assert_eq!(r.uuid, data_1.uuid);
         assert_eq!(r.name, data_1.name);
     }
@@ -317,13 +317,13 @@ mod test {
             uuid: "test".to_string(),
             name: "test".to_string(),
         };
-        db.insert("test", data_1.clone()).unwrap();
+        db.insert_data("test", data_1.clone()).unwrap();
         let data_2 = TestData {
             uuid: "test2".to_string(),
             name: "test2".to_string(),
         };
-        db.insert("test", data_2.clone()).unwrap();
-        db.delete::<TestData>("test", "test").unwrap();
+        db.insert_data("test", data_2.clone()).unwrap();
+        db.delete_data::<TestData>("test", "test").unwrap();
         let r: Vec<TestData> = db.read_collection("test").unwrap();
         assert_eq!(r.len(), 1);
         assert_eq!(r[0].uuid, data_2.uuid);
@@ -347,12 +347,12 @@ mod test {
             uuid: "test".to_string(),
             name: "test".to_string(),
         };
-        db.insert("test", data_1.clone()).unwrap();
+        db.insert_data("test", data_1.clone()).unwrap();
         let data_2 = TestData {
             uuid: "test".to_string(),
             name: "test2".to_string(),
         };
-        db.update("test", data_2.clone()).unwrap();
+        db.update_data("test", data_2.clone()).unwrap();
         let r: Vec<TestData> = db.read_collection("test").unwrap();
         assert_eq!(r.len(), 1);
         assert_eq!(r[0].uuid, data_2.uuid);

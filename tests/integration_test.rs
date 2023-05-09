@@ -42,14 +42,14 @@ fn integration_single_collection() {
         name: "Jack".to_string(),
         age: 36,
     };
-    let r = db.insert("test", test_data_01.clone());
+    let r = db.insert_data("test", test_data_01.clone());
     assert!(r.is_ok());
-    let r = db.insert("test", test_data_02.clone());
+    let r = db.insert_data("test", test_data_02.clone());
     assert!(r.is_ok());
-    let r = db.insert("test", test_data_03.clone());
+    let r = db.insert_data("test", test_data_03.clone());
     assert!(r.is_ok());
 
-    let r = db.list::<TestData>("test");
+    let r = db.list_data::<TestData>("test");
     assert!(r.is_ok());
     assert_eq!(r.unwrap().len(),3);
 
@@ -58,29 +58,29 @@ fn integration_single_collection() {
         name: test_data_02.name.clone(),
         age: 43,
     };
-    let r = db.update("test", update_data.clone());
+    let r = db.update_data("test", update_data.clone());
     assert!(r.is_ok());
 
-    let query_data = db.query::<TestData>("test", &test_data_02.name);
+    let query_data = db.query_data::<TestData>("test", &test_data_02.name);
     assert!(query_data.is_ok());
     let query_data = query_data.unwrap();
     assert_eq!(query_data.name, update_data.name);
 
 
     // Delete data
-    let r = db.delete::<TestData>("test", &test_data_01.name);
+    let r = db.delete_data::<TestData>("test", &test_data_01.name);
     assert!(r.is_ok());
-    let r = db.delete::<TestData>("test", &test_data_02.name);
+    let r = db.delete_data::<TestData>("test", &test_data_02.name);
     assert!(r.is_ok());
 
-    let query_data = db.query::<TestData>("test", &test_data_01.name);
+    let query_data = db.query_data::<TestData>("test", &test_data_01.name);
     assert!(query_data.is_err());
-    let query_data = db.query::<TestData>("test", &test_data_02.name);
+    let query_data = db.query_data::<TestData>("test", &test_data_02.name);
     assert!(query_data.is_err());
-    let query_data = db.query::<TestData>("test", &test_data_03.name);
+    let query_data = db.query_data::<TestData>("test", &test_data_03.name);
     assert!(query_data.is_ok());
 
-    let r = db.list::<TestData>("test");
+    let r = db.list_data::<TestData>("test");
     assert!(r.is_ok());
     assert_eq!(r.unwrap().len(),1);
 }
